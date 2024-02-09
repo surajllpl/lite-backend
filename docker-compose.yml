@@ -1,0 +1,94 @@
+# References : 
+# version: '3.8'
+
+# services:
+#   lite-server-main:
+#     container_name: lite-server-main
+#     build: ./lite-server-main
+#     image: yatindevs/lite-server-main
+#     restart: unless-stopped
+#     env_file: ./.env
+#     ports:
+#       - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+#     environment:
+#       - PG_DB=$POSTGRESDB_DATABASE
+#       - PG_USER=$POSTGRESDB_USER
+#       - PG_PASSWORD=$POSTGRESDB_ROOT_PASSWORD
+#       - PG_PORT=$POSTGRESDB_DOCKER_PORT
+#       - PG_HOST=postgresdb
+#     stdin_open: true
+#     tty: true
+#     depends_on:
+#       - postgresdb
+
+#   postgresdb:
+#     container_name: postgresdb
+#     image: postgres:latest
+#     restart: unless-stopped
+#     env_file: ./.env
+#     environment:
+#       - POSTGRES_DB=$POSTGRESDB_DATABASE
+#       - POSTGRES_USER=$POSTGRESDB_USER
+#       - POSTGRES_PASSWORD=$POSTGRESDB_ROOT_PASSWORD
+#     ports:
+#       - $POSTGRESDB_LOCAL_PORT:$POSTGRESDB_DOCKER_PORT
+# # named volumes 
+#     volumes:
+#       - node_db_data:/var/lib/postgresql/data
+  
+# volumes: 
+#   node_db_data: {}
+
+
+#   version: '3.8'
+
+# services:
+
+#     node_app:
+#       container_name: lite-server
+#       image: lite-server:0.0.2
+#       build: 
+#         context: .
+#       ports:
+#         - "3002:3002"
+#       environment:
+#         - EXTERNAL_PORT=3002 
+
+
+version: '3.8'
+
+services:
+
+  postgresdb:
+    image: postgres:latest
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - POSTGRES_USER=$POSTGRESDB_USER
+      - POSTGRES_PASSWORD=$POSTGRESDB_ROOT_PASSWORD
+      - POSTGRES_DB=$POSTGRESDB_DATABASE
+    ports:
+      - $POSTGRESDB_LOCAL_PORT:$POSTGRESDB_DOCKER_PORT
+    volumes:
+      - db:/var/lib/postgres
+
+
+  app:
+    depends_on:
+      - postgresdb
+    build: ./lite-server
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+    environment:
+      - DB_HOST=postgresdb
+      - DB_USER=$POSTGRESDB_USER
+      - DB_PASSWORD=$POSTGRESDB_ROOT_PASSWORD
+      - DB_NAME=$POSTGRESDB_DATABASE
+      - DB_PORT=$POSTGRESDB_DOCKER_PORT
+    stdin_open: true
+    tty: true
+
+volumes: 
+  db:
